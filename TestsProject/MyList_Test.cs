@@ -32,6 +32,16 @@ namespace TestsProject
             Assert.That(actual, Is.EqualTo(expected));
         }
 
+        [Test]
+        public void CorrectClearList()
+        {
+            var list = new MyList<int> {1, 2, 3};
+            
+            list.Clear();
+            
+            Assert.That(list.Count, Is.EqualTo(0));
+        } 
+
         public static IEnumerable TestCases
         {
             get

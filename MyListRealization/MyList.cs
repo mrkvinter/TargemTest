@@ -43,6 +43,7 @@ namespace TargemTest
         {
             for (var i = 0; i < buffer.Length; i++)
                 buffer[i] = default(T);
+            Count = 0;
         }
 
         public bool Contains(T item)
