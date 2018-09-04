@@ -8,9 +8,9 @@ namespace Calculator.Tools
     {
         private readonly ExpressionReader expressionReader;
         private readonly ExpressionUnitChecker expressionUnitChecker;
-        private readonly Stack<ExpressionUnit> stack = new Stack<ExpressionUnit>();
+        private readonly Stack<OperationExpressionUnit> stack = new Stack<OperationExpressionUnit>();
 
-        private ExpressionUnit previousExpressionUnit;
+        private IExpressionUnit previousExpressionUnit;
 
         public PolyNotationReader(ExpressionUnitChecker expressionUnitChecker, string expression)
         {
@@ -18,32 +18,33 @@ namespace Calculator.Tools
             expressionReader = new ExpressionReader(expressionUnitChecker, expression.Replace(" ", ""));
         }
 
-        public List<ExpressionUnit> GetPolNotation()
+        public List<IExpressionUnit> GetPolNotation()
         {
-            var result = new List<ExpressionUnit>();
+            var result = new List<IExpressionUnit>();
             foreach (var expressionUnit in expressionReader.Parse())
             {
                 if (IsGhostedMultiplicationSign(expressionUnit))
-                    AddOperation(new ExpressionUnit('*'), result);
+                    AddOperation(new OperationExpressionUnit('*'), result);
 
-                if (expressionUnit.Type == TypeStatement.Number)
+                switch (expressionUnit)
                 {
-                    result.Add(expressionUnit);
+                        case NumberExpressionUnit n:
+                            result.Add(n);
+                            break;
+                         case OperationExpressionUnit o:
+                             if (stack.Count == 0 || o.IsOpenBracket())
+                                 stack.Push(o);
+                             else if (o.IsCloseBracket())
+                                 ReadUnderBrackets(result);
+                             else
+                                 AddOperation(o, result);
+                             break;
+                         
                 }
-                else
-                {
-                    if (stack.Count == 0 || expressionUnit.Operation == '(')
-                        stack.Push(expressionUnit);
-                    else if (expressionUnit.Operation == ')')
-                        ReadUnderBrackets(result);
-                    else
-                        AddOperation(expressionUnit, result);
-                }
-
                 previousExpressionUnit = expressionUnit;
             }
 
-            if (stack.Any(e => e.Operation.Equals('(') || e.Operation.Equals(')')))
+            if (stack.Any(e => e.IsOpenBracket() || e.IsCloseBracket()))
                 throw new NotCorrectBracketsCountException();
 
             result.AddRange(stack);
@@ -51,16 +52,16 @@ namespace Calculator.Tools
             return result;
         }
 
-        private void ReadUnderBrackets(List<ExpressionUnit> result)
+        private void ReadUnderBrackets(List<IExpressionUnit> result)
         {
-            ExpressionUnit op = null;
+            OperationExpressionUnit op = null;
             while (stack.Count > 0 && (op = stack.Pop()).Operation != '(')
                 result.Add(op);
-            if (op != null && (op.Type != TypeStatement.Operation || op.Operation != '('))
+            if (op != null && !op.IsOpenBracket())
                 throw new NotCorrectBracketsCountException();
         }
 
-        private bool IsGhostedMultiplicationSign(ExpressionUnit currentExpressionUnit)
+        private bool IsGhostedMultiplicationSign(IExpressionUnit currentExpressionUnit)
         {
             if (previousExpressionUnit == null) return false;
             
@@ -69,7 +70,7 @@ namespace Calculator.Tools
                    previousExpressionUnit.IsNumber() && currentExpressionUnit.IsOpenBracket();
         }
 
-        private void AddOperation(ExpressionUnit expressionUnit, List<ExpressionUnit> result)
+        private void AddOperation(OperationExpressionUnit expressionUnit, List<IExpressionUnit> result)
         {
             var weight = expressionUnitChecker.GetWeight(expressionUnit.Operation);
             while (stack.Count > 0 && expressionUnitChecker.GetWeight(stack.First().Operation) >= weight)

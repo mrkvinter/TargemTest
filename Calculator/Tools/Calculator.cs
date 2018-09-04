@@ -14,14 +14,22 @@ namespace Calculator.Tools
             var stackExpression = new Stack<double>();
 
             foreach (var unit in result)
-                stackExpression.Push(unit.Type == TypeStatement.Operation
-                    ? Calck(stackExpression.Pop(), stackExpression.Pop(), unit)
-                    : unit.Number);
+            {
+                switch (unit)
+                {
+                    case NumberExpressionUnit n:
+                        stackExpression.Push(n.Number);
+                        break;
+                    case OperationExpressionUnit o:
+                        stackExpression.Push(Calck(stackExpression.Pop(), stackExpression.Pop(), o));
+                        break;
+                }
+            }
 
             return stackExpression.Peek();
         }
 
-        private double Calck(double a, double b, ExpressionUnit operation)
+        private double Calck(double a, double b, OperationExpressionUnit operation)
         {
             switch (operation.Operation)
             {

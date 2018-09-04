@@ -42,8 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\ExpressionUnit.cs" />
-    <Compile Include="Models\TypeStatement.cs" />
+    <Compile Include="Models\OperationExpressionUnit.cs" />
+    <Compile Include="Models\IExpressionUnit.cs" />
+    <Compile Include="Models\NumberExpressionUnit.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tools\Calculator.cs" />
