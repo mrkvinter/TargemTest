@@ -87,8 +87,7 @@ namespace TargemTest
 
         public void Insert(int index, T item)
         {
-            if (index >= Count)
-                throw new IndexOutOfRangeException();
+            CheckIndex(index);
             if (buffer.Length + 1 >= Count)
                 Increase();
 
@@ -100,8 +99,7 @@ namespace TargemTest
 
         public void RemoveAt(int index)
         {
-            if (index >= Count)
-                throw new IndexOutOfRangeException();
+            CheckIndex(index);
             for (var j = index; j < Count; j++)
                 buffer[j] = buffer[j + 1];
             Count--;
@@ -111,16 +109,20 @@ namespace TargemTest
         {
             get
             {
-                if (index >= Count)
-                    throw new IndexOutOfRangeException();
+                CheckIndex(index);
                 return buffer[index];
             }
             set
             {
-                if (index >= Count)
-                    throw new IndexOutOfRangeException();
+                CheckIndex(index);
                 buffer[index] = value;
             }
+        }
+
+        private void CheckIndex(int index)
+        {
+            if (index >= Count)
+                throw new IndexOutOfRangeException();
         }
 
         private void Increase()
